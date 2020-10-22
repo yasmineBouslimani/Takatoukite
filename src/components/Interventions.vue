@@ -2,36 +2,95 @@
     <section class="interventionsapp">
         <header class="header">
             <h1>Takatoukité</h1>
-            <input type="text" class="new-intervention" placeholder="Ajoutez votre demande d'intervention"
-                   v-model="newIntervention" v-on:keyup.enter="addInterventions">
-        </header>
-        <div class="main">
-            <ul class="interventions-list">
-                <li class="intervention" v-for="intervention in interventionsList" :key="intervention.id"
-                    :class="{completed: intervention.completed, editing: intervention === editing}">
-                    <div class="view">
-                        <input type="checkbox" v-model="intervention.completed" class="toggle">
-                        <label @dblclick="editInterventions(intervention)">{{intervention.name}}</label>
+            <form
+                    @submit="checkForm"
+                    method="post"
+            >
+                <div v-if="errors.length" class="alert alert-danger" role="alert">
+                    Veuillez remplir le(s) champ(s) suivant(s) :
+                    <i v-for="(error, index) in errors" :key="index">{{ error }}</i>.
+
+                </div>
+                <div class="form-row align-items-center" style="padding: 20px 0 0 20px;">
+                    <div class="col-auto">
+                        <label class="sr-only">Prénom</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text"><i class="fas fa-user"></i></div>
+                            </div>
+                            <input
+                                    type="text"
+                                    placeholder="Quel est votre prénom ?"
+                                    v-model="name"
+                                    class="form-control"
+                            />
+                        </div>
                     </div>
-                    <input type="text" class="edit" v-model="intervention.name" @keyup.enter="doneEditIntervention">
-                    <div class="moreInformations" @click="showModal = true"></div>
+                    <div class="col-auto">
+                        <label class="sr-only">Détails</label>
+                        <input
+                                type="text"
+                                placeholder="Quel est l'objet de votre demande ?"
+                                v-model="details"
+                                class="form-control mb-2"
+                                style="width: 260px"
+                        />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary mb-2">Envoyer !</button>
+                    </div>
+                </div>
+            </form>
+        </header>
+
+        <div class="mt-5 alert alert-success" role="alert" v-if="interventionsListIsEmpty">
+            <p class="text-center">Pas d'intervention pour le moment</p>
+        </div>
+
+        <table v-if="!interventionsListIsEmpty" class="table mt-5">
+            <thead>
+            <tr>
+                <th scope="col"></th>
+                <th scope="col">#</th>
+                <th scope="col">Prénom</th>
+                <th scope="col">Date</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="interventions-list">
+            <tr v-for="(intervention, index) in interventionsList" :key="index"
+                :class="{completed: intervention.completed,}">
+                <td><input type="checkbox" v-model="intervention.completed" class="toggle"></td>
+                <td>{{ ++index }}</td>
+                <td>>{{intervention.name}}</td>
+                <td>{{ intervention.date }}</td>
+                <td>
+                    <div class="d-flex">
+                        <div class="mr-4" @click="showModal = true"><i class="fas fa-info"></i></div>
+                        <div @click.prevent="deleteIntervention(intervention)"><i class="fas fa-trash-alt"></i></div>
+                    </div>
+
+
                     <div class="modal is-active" v-if="showModal" @click="showModal = false">
                         <div class="modal-background"></div>
                         <div class="modal-content">
                             <div class="box">
-                                <p style="font-size: 20px; font-weight: bold">{{intervention.name}}</p>
+                                <p>Demande d'intervention faite par : <strong style="font-size: 30px">
+                                    {{intervention.name}}</strong></p>
                                 <br>
                                 <p style="font-size: 18px">" {{intervention.details}} "</p>
                                 <br>
-                                <p style="font-size: 12px">{{intervention.date}}</p>
+                                <p style="font-size: 12px">Cette demande d'intervention a été crée le <strong>{{intervention.date}}</strong>
+                                </p>
                             </div>
                         </div>
                     </div>
-                </li>
-            </ul>
+                </td>
+            </tr>
+            </tbody>
+        </table>
 
-        </div>
-        <footer class="footer">
+        <footer class="footer" v-if="!interventionsListIsEmpty">
             <span class="interventions-count"><strong>{{ remainingInterventions }}</strong> intervention(s) à traiter</span>
         </footer>
     </section>
@@ -40,40 +99,56 @@
     export default {
         data() {
             return {
-                interventionsList: [{
-                    name: "Impossible de télécharger le pdf",
-                    details: "I'm speaking with myself, number one, because I have a very good brain and I've said a lot of things. I know words. I have the best words.",
-                    completed: false,
-                    date: new Date().toLocaleString()
-                }],
+                name: "",
+                details: "",
+                completed: false,
                 newIntervention: "",
                 editing: null,
-                showModal: false
+                showModal: false,
+                interventionsList: [],
+                errors: [],
             }
         },
         methods: {
-            addInterventions() {
+            checkForm(e) {
+                if (this.name && this.details) {
+                    this.onSubmit();
+                }
+                this.errors = [];
+                if (!this.name) {
+                    this.errors.push('votre prénom, ');
+                }
+                if (!this.details) {
+                    this.errors.push('les détails de votre demande d\'intervention');
+                }
+                e.preventDefault();
+            },
+            onSubmit() {
                 this.interventionsList.push({
-                    name: this.newIntervention,
-                    details: "I was going to say something extremely rough to Lorem Ipsum, to its family, and I said to myself, \"I can't do it. I just can't do it. It's inappropriate. It's not nice.\" That other text? Sadly, it’s no longer a 10.",
+                    name: this.name,
+                    details: this.details,
                     completed: false,
                     date: new Date().toLocaleString()
-                })
+                });
+                this.clearForm();
             },
-            editInterventions(intervention) {
-                this.editing = intervention
-            },
-            doneEditIntervention() {
-                this.editing = null
-            }
+            deleteIntervention(intervention) {
+                this.interventionsList = this.interventionsList.filter(i => i !== intervention)
 
+            },
+            clearForm() {
+                this.name = " ";
+                this.details = " ";
+            },
         },
         computed: {
+            interventionsListIsEmpty() {
+                return this.interventionsList.length === 0;
+            },
             remainingInterventions() {
                 return this.interventionsList.filter(intervention => !intervention.completed).length
             }
         }
-
     }
 </script>
 
