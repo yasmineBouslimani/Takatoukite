@@ -62,7 +62,10 @@
                 :class="{completed: intervention.completed,}">
                 <td><input type="checkbox" v-model="intervention.completed" class="toggle"></td>
                 <td>{{ ++index }}</td>
-                <td>>{{intervention.name}}</td>
+                <td @dblclick="editName(intervention)">
+                    <span v-if="!intervention.showEditName">{{intervention.name}}</span>
+                    <input v-else v-model="intervention.name" type="text">
+                </td>
                 <td>{{ intervention.date }}</td>
                 <td>
                     <div class="d-flex">
@@ -105,6 +108,7 @@
                 newIntervention: "",
                 editing: null,
                 showModal: false,
+                showEditName: false,
                 interventionsList: [],
                 errors: [],
             }
@@ -137,9 +141,16 @@
 
             },
             clearForm() {
-                this.name = " ";
-                this.details = " ";
+                this.name = "";
+                this.details = "";
             },
+
+            editName(intervention) {
+                const index = this.interventionsList.indexOf(intervention);
+                intervention.showEditName = true;
+                this.$set(this.interventionsList, index, intervention);
+                console.log(this.interventionsList);
+            }
         },
         computed: {
             interventionsListIsEmpty() {
