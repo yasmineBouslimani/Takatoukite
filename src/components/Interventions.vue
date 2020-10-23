@@ -59,7 +59,7 @@
             </tr>
             </thead>
             <tbody class="interventions-list">
-            <tr v-for="(intervention, index) in filteredopperation" :key="index"
+            <tr v-for="(intervention, index) in paginatedData" :key="index"
                 :class="{completed: intervention.completed,}">
                 <td><input type="checkbox" v-model="intervention.completed" class="toggle"></td>
                 <td>{{ ++index }}</td>
@@ -191,13 +191,10 @@
             paginatedData() {
                 const start = this.pageNumber * this.size,
                     end = start + this.size;
-                return this.interventionsList.slice(start, end)
-            },
-            filteredopperation(){
-                return this.interventionsList.filter((interventionsList) =>{ 
+                return this.interventionsList.filter((interventionsList) =>{
                     return interventionsList.name.match(this.search)
-                });
-            }
+                }).slice(start, end)
+            },
         }
     }
 </script>
