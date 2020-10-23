@@ -166,32 +166,32 @@
                 intervention.showEditName = false;
                 this.$set(this.interventionsList, index, intervention);
             },
-                nextPage() {
-                    this.pageNumber++;
-                }
-            ,
-                prevPage() {
-                    this.pageNumber--;
-                }
-            },
-            computed: {
-                interventionsListIsEmpty() {
-                    return this.interventionsList.length === 0;
-                },
-                remainingInterventions() {
-                    return this.interventionsList.filter(intervention => !intervention.completed).length
-                },
-                pageCount() {
-                    let l = this.interventionsList.length,
-                        s = this.size;
-                    return Math.ceil(l / s);
-                },
-                paginatedData() {
-                    const start = this.pageNumber * this.size,
-                        end = start + this.size;
-                    return this.interventionsList.slice(start, end)
-                }
+            nextPage() {
+                this.pageNumber++;
             }
+            ,
+            prevPage() {
+                this.pageNumber--;
+            }
+        },
+        computed: {
+            interventionsListIsEmpty() {
+                return this.interventionsList.length === 0;
+            },
+            remainingInterventions() {
+                return this.interventionsList.filter(intervention => !intervention.completed).length
+            },
+            pageCount() {
+                let l = this.interventionsList.length,
+                    s = this.size;
+                return Math.ceil(l / s);
+            },
+            paginatedData() {
+                const start = this.pageNumber * this.size,
+                    end = start + this.size;
+                return this.interventionsList.slice(start, end)
+            }
+        }
     }
 </script>
 <style src="./interventions.css"></style>
