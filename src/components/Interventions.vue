@@ -3,13 +3,13 @@
         <header class="header">
             <h1>Takatoukité</h1>
             <form
-                    @submit="checkForm"
+                    id="form"
+                    @submit.prevent="checkForm"
                     method="post"
             >
                 <div v-if="errors.length" class="alert alert-danger" role="alert">
                     Veuillez remplir le(s) champ(s) suivant(s) :
-                    <i v-for="(error, index) in errors" :key="index">{{ error }}</i>.
-
+                    <i v-for="(error, index) in errors" :key="index">{{ error }}</i>
                 </div>
                 <div class="form-row align-items-center" style="padding: 20px 0 0 20px;">
                     <div class="col-auto">
@@ -37,7 +37,7 @@
                         />
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-primary mb-2">Envoyer !</button>
+                        <button id="submit" type="submit" class="btn btn-primary mb-2">Envoyer !</button>
                     </div>
                 </div>
             </form>
@@ -58,19 +58,17 @@
             </tr>
             </thead>
             <tbody class="interventions-list">
-            <tr v-for="(intervention, index) in interventionsList" :key="index"
+            <tr v-for="(intervention, index) in paginatedData" :key="index"
                 :class="{completed: intervention.completed,}">
                 <td><input type="checkbox" v-model="intervention.completed" class="toggle"></td>
                 <td>{{ ++index }}</td>
-                <td>>{{intervention.name}}</td>
+                <td>{{intervention.name}}</td>
                 <td>{{ intervention.date }}</td>
                 <td>
                     <div class="d-flex">
                         <div class="mr-4" @click="showModal = true"><i class="fas fa-info"></i></div>
                         <div @click.prevent="deleteIntervention(intervention)"><i class="fas fa-trash-alt"></i></div>
                     </div>
-
-
                     <div class="modal is-active" v-if="showModal" @click="showModal = false">
                         <div class="modal-background"></div>
                         <div class="modal-content">
@@ -88,9 +86,23 @@
                 </td>
             </tr>
             </tbody>
+            <div v-show="!interventionsListIsEmpty">
+
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" :class="{disabled: pageNumber === 0}">
+                            <a class="page-link" @click="prevPage">Previous</a>
+                        </li>
+                        <li class="page-item" :class="{disabled: pageNumber >= pageCount -1}">
+                            <a class="page-link" @click="nextPage">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </table>
 
-        <footer class="footer" v-if="!interventionsListIsEmpty">
+        <footer class="footer" v-show="!interventionsListIsEmpty">
+
             <span class="interventions-count"><strong>{{ remainingInterventions }}</strong> intervention(s) à traiter</span>
         </footer>
     </section>
@@ -103,16 +115,23 @@
                 details: "",
                 completed: false,
                 newIntervention: "",
-                editing: null,
                 showModal: false,
                 interventionsList: [],
                 errors: [],
+                pageNumber: 0
+            }
+        },
+        props: {
+            size: {
+                type: Number,
+                required: false,
+                default: 3
             }
         },
         methods: {
-            checkForm(e) {
+            checkForm() {
                 if (this.name && this.details) {
-                    this.onSubmit();
+                    this.addIntervention();
                 }
                 this.errors = [];
                 if (!this.name) {
@@ -121,25 +140,24 @@
                 if (!this.details) {
                     this.errors.push('les détails de votre demande d\'intervention');
                 }
-                e.preventDefault();
             },
-            onSubmit() {
+            addIntervention() {
                 this.interventionsList.push({
                     name: this.name,
                     details: this.details,
                     completed: false,
                     date: new Date().toLocaleString()
                 });
-                this.clearForm();
             },
             deleteIntervention(intervention) {
                 this.interventionsList = this.interventionsList.filter(i => i !== intervention)
-
             },
-            clearForm() {
-                this.name = " ";
-                this.details = " ";
+            nextPage() {
+                this.pageNumber++;
             },
+            prevPage() {
+                this.pageNumber--;
+            }
         },
         computed: {
             interventionsListIsEmpty() {
@@ -147,6 +165,16 @@
             },
             remainingInterventions() {
                 return this.interventionsList.filter(intervention => !intervention.completed).length
+            },
+            pageCount() {
+                let l = this.interventionsList.length,
+                    s = this.size;
+                return Math.ceil(l / s);
+            },
+            paginatedData() {
+                const start = this.pageNumber * this.size,
+                    end = start + this.size;
+                return this.interventionsList.slice(start, end)
             }
         }
     }
