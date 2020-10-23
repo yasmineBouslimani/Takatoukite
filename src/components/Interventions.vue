@@ -2,6 +2,7 @@
     <section class="interventionsapp">
         <header class="header">
             <h1>Takatoukité</h1>
+            <input type="text" v-model="search" placeholder="Rechercher une opération"/>
             <form
                     id="form"
                     @submit.prevent="checkForm"
@@ -58,7 +59,7 @@
             </tr>
             </thead>
             <tbody class="interventions-list">
-            <tr v-for="(intervention, index) in paginatedData" :key="index"
+            <tr v-for="(intervention, index) in filteredopperation" :key="index"
                 :class="{completed: intervention.completed,}">
                 <td><input type="checkbox" v-model="intervention.completed" class="toggle"></td>
                 <td>{{ ++index }}</td>
@@ -122,7 +123,8 @@
                 showEditName: false,
                 interventionsList: [],
                 errors: [],
-                pageNumber: 0
+                pageNumber: 0,
+                search: ''
             }
         },
         props: {
@@ -190,6 +192,11 @@
                 const start = this.pageNumber * this.size,
                     end = start + this.size;
                 return this.interventionsList.slice(start, end)
+            },
+            filteredopperation(){
+                return this.interventionsList.filter((interventionsList) =>{ 
+                    return interventionsList.name.match(this.search)
+                });
             }
         }
     }
