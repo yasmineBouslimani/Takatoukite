@@ -74,8 +74,8 @@
                         <div @click.prevent="deleteIntervention(intervention)"><i class="fas fa-trash-alt"></i></div>
                     </div>
                     <div class="modal is-active" v-if="showModal" @click="showModal = false">
-                        <div class="modal-background"></div>
-                        <div class="modal-content">
+                        <div class="modal-background">
+                        <div class="modal-content" style="margin-top: 14%; width: 50%">
                             <div class="box">
                                 <p>Demande d'intervention faite par : <strong style="font-size: 30px">
                                     {{intervention.name}}</strong></p>
@@ -83,7 +83,7 @@
                                 <p style="font-size: 18px">" {{intervention.details}} "</p>
                                 <br>
                                 <p style="font-size: 12px">Cette demande d'intervention a été crée le <strong>{{intervention.date}}</strong>
-                                </p>
+                                </p></div>
                             </div>
                         </div>
                     </div>
